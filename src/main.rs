@@ -1,5 +1,5 @@
 use rustautogui::{self, RustAutoGui};
-use std::{env, fs, io::{self, BufRead, Write}, path::{Path, PathBuf}, thread, time::{Duration, Instant}, vec::{self, Vec}};
+use std::{env, fs, io::{self, BufRead, Write}, path::{Path, PathBuf}, thread, time::{Duration, Instant}, vec::Vec};
 use clap::{command, Arg, ArgAction};
 use chrono::{Timelike, Local};
 use image::{
@@ -273,6 +273,7 @@ fn main() {
     let mut rgui: rustautogui::RustAutoGui = RustAutoGui::new(false).unwrap();
     let config_dir: PathBuf = [env::current_exe().unwrap().parent().unwrap(), Path::new(".rgasolineira")].iter().collect();
     if !fs::exists(&config_dir).unwrap() {
+        println!("Tworzenie folderu konfiguracyjnego: {:?}", &config_dir);
         fs::create_dir(&config_dir).expect("Nie można utworzyć folderu konfiguracyjnego!");
     }
     let config_path: PathBuf = config_dir.join("credentials.conf");
