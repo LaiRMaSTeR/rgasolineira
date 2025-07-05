@@ -6,6 +6,7 @@ use image::{
     imageops::{resize, FilterType::{CatmullRom}},
     ImageBuffer, Luma};
 use reqwest::blocking;
+use rand;
 
 
 
@@ -141,26 +142,26 @@ fn log_in(conf: &Config, rgui: &RustAutoGui) {
     rgui.left_click().unwrap();
     for c in conf.username.chars() {
         rgui.keyboard_input(&String::from(c)).unwrap();
-        thread::sleep(Duration::from_millis(10));  // TODO make this random
+        thread::sleep(Duration::from_millis(rand::random_range(30..40)));
     }
     thread::sleep(Duration::from_millis(100));
-    rgui.move_mouse_to_pos(conf.password_pos.x, conf.password_pos.y, 0.05).unwrap();
+    rgui.move_mouse_to_pos(conf.password_pos.x, conf.password_pos.y, rand::random_range(0.05..0.1)).unwrap();
     rgui.left_click().unwrap();
     for c in conf.password.chars() {
         rgui.keyboard_input(&String::from(c)).unwrap();
-        thread::sleep(Duration::from_millis(10));  // TODO make this random
+        thread::sleep(Duration::from_millis(rand::random_range(30..40)));
     }
     rgui.keyboard_command("enter").unwrap();
     thread::sleep(Duration::from_millis(100));
-    rgui.move_mouse_to_pos(conf.next_day_pos.x, conf.next_day_pos.y, 0.15).unwrap();
+    rgui.move_mouse_to_pos(conf.next_day_pos.x, conf.next_day_pos.y, rand::random_range(0.1..0.2)).unwrap();
     rgui.left_click().unwrap();
     println!("Zalogowano")
 }
 
 
 fn log_out(conf: &Config, rgui: &RustAutoGui) {
-    thread::sleep(Duration::from_secs(4));
-    rgui.move_mouse_to_pos(conf.logout_pos.x, conf.logout_pos.y, 0.2).unwrap();
+    thread::sleep(Duration::from_secs(rand::random_range(4..=8)));
+    rgui.move_mouse_to_pos(conf.logout_pos.x, conf.logout_pos.y, rand::random_range(0.05..0.15)).unwrap();
     rgui.left_click().unwrap();
     println!("Wylogowano");
 }
@@ -173,9 +174,9 @@ fn reserve_movies(movies: &Vec<Position>, rgui: &mut RustAutoGui) {
     let mut time: f32;
     for movie in movies {
         current_pos = construct_position(rgui.get_mouse_position().unwrap());
-        time = distance(&current_pos, movie) / diagonal.sqrt() / 2.;  // TODO this might be too short?
+        time = distance(&current_pos, movie) / diagonal.sqrt() / 4.;
         rgui.move_mouse_to_pos(movie.x, movie.y, time).unwrap();
-        thread::sleep(Duration::from_millis(50));
+        thread::sleep(Duration::from_millis(rand::random_range(30..60)));
         rgui.left_click().unwrap();
         println!("Przesunięto do {} {} w {} s", movie.x, movie.y, time);
     }
@@ -195,7 +196,7 @@ fn wait_till(hour: u32, minute: u32, second: u32, text: &str) {
         }
         print!("\r{text} {:0>2}:{:0>2}:{:0>2}", time_diff / 3600, time_diff % 3600 / 60, time_diff % 3600 % 60);
         io::stdout().flush().unwrap();
-        thread::sleep(Duration::from_millis(100));
+        thread::sleep(Duration::from_millis(10));
         time = chrono::Local::now();
     }
     println!("");
@@ -233,7 +234,7 @@ fn check_movies_novelty(new_movies: &Vec<(u32, u32, f32)>, movies: &mut Vec<(u32
 
 fn detect_movies(path: &PathBuf, rgui: &mut RustAutoGui) -> Vec<Position> {
     println!("\nSzukam zaznaczonych filmów");
-    let time = Instant::now();
+    let time: Instant = Instant::now();
     let img: image::ImageReader<io::BufReader<fs::File>> = image::ImageReader::open(path).unwrap();
     let img: image::DynamicImage = img.decode().unwrap();
     let gray_image: ImageBuffer<Luma<u8>, Vec<u8>> = img.to_luma8();
@@ -242,7 +243,6 @@ fn detect_movies(path: &PathBuf, rgui: &mut RustAutoGui) -> Vec<Position> {
         rgui.store_template_from_imagebuffer(scaled_image, None, rustautogui::MatchMode::Segmented, &scaling.to_string()).unwrap();
     }
     rgui.store_template_from_imagebuffer(gray_image, None, rustautogui::MatchMode::Segmented, "10").unwrap();
-    // rgui.prepare_template_from_file("marker2.png", None, rustautogui::MatchMode::Segmented).unwrap();
     let mut locations: Option<Vec<(u32, u32, f32)>>;
     let mut movies: Vec<(u32, u32, f32)> = vec![];
     for scaling in 14..40 {
@@ -291,14 +291,13 @@ fn main() {
         let config: Config = load_config(&config_path);
         let mut movies: Vec<Position>;
         loop {
-            if matches.get_flag("debug") { wait_till(8, 27, 16, "Logowanie za"); } // 8:28:16 and maybe make this more random (changed to 27 for auto mode)
+            if matches.get_flag("debug") { wait_till(8, 27, rand::random_range(0..60), "Logowanie za"); } // 8:28:16
             log_in(&config, &rgui);
             movies = detect_movies(&marker_path, &mut rgui);
-            if matches.get_flag("debug") { wait_till(8, 29, 59, "Rezerwacje za"); } // 8:29:59
+            if matches.get_flag("debug") { wait_till(8, 30, 0, "Rezerwacje za"); } // 8:29:59
             if movies.len() > 0 { reserve_movies(&movies, &mut rgui); }
             log_out(&config, &rgui);
             movies.clear();
-            println!("{}", movies.len());
 
             if !matches.get_flag("debug") { break; }
         }
@@ -307,9 +306,9 @@ fn main() {
         let config: Config = load_config(&config_path);
         let movies: Vec<Position> = load_movies(&movies_path);
 
-        if matches.get_flag("debug") { wait_till(8, 28, 16, "Logowanie za"); } // 8:28:16 and maybe make this more random
+        if matches.get_flag("debug") { wait_till(8, 28, rand::random_range(0..60), "Logowanie za"); } // 8:28:16
         log_in(&config, &rgui);
-        if matches.get_flag("debug") { wait_till(8, 29, 59, "Rezerwacje za"); } // 8:29:59
+        if matches.get_flag("debug") { wait_till(8, 30, 0, "Rezerwacje za"); } // 8:29:59
         reserve_movies(&movies, &mut rgui);
         log_out(&config, &rgui);
     }
