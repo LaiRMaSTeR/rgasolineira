@@ -232,7 +232,7 @@ fn check_movies_novelty(new_movies: &Vec<(u32, u32, f32)>, movies: &mut Vec<(u32
 }
 
 
-fn detect_movies(path: &PathBuf, rgui: &mut RustAutoGui) -> Vec<Position> {
+fn detect_movies(path: &PathBuf, path_small: &PathBuf, rgui: &mut RustAutoGui) -> Vec<Position> {
     println!("\nSzukam zaznaczonych filmów");
     let time: Instant = Instant::now();
     let img: image::ImageReader<io::BufReader<fs::File>> = image::ImageReader::open(path).unwrap();
@@ -242,7 +242,12 @@ fn detect_movies(path: &PathBuf, rgui: &mut RustAutoGui) -> Vec<Position> {
         let scaled_image: ImageBuffer<Luma<u8>, Vec<u8>> = resize(&gray_image, &gray_image.width() * scaling / 100, &gray_image.height() * scaling / 100, CatmullRom);
         rgui.store_template_from_imagebuffer(scaled_image, None, rustautogui::MatchMode::Segmented, &scaling.to_string()).unwrap();
     }
-    rgui.store_template_from_imagebuffer(gray_image, None, rustautogui::MatchMode::Segmented, "10").unwrap();
+    // rgui.store_template_from_imagebuffer(gray_image, None, rustautogui::MatchMode::Segmented, "100").unwrap();
+    let img: image::ImageReader<io::BufReader<fs::File>> = image::ImageReader::open(path_small).unwrap();
+    let img: image::DynamicImage = img.decode().unwrap();
+    let gray_image: ImageBuffer<Luma<u8>, Vec<u8>> = img.to_luma8();
+    rgui.store_template_from_imagebuffer(gray_image, None, rustautogui::MatchMode::Segmented, "small").unwrap();
+
     let mut locations: Option<Vec<(u32, u32, f32)>>;
     let mut movies: Vec<(u32, u32, f32)> = vec![];
     for scaling in 14..40 {
@@ -252,6 +257,12 @@ fn detect_movies(path: &PathBuf, rgui: &mut RustAutoGui) -> Vec<Position> {
             None => continue
         }
     }
+    locations = rgui.find_stored_image_on_screen(0.9, "small").unwrap();
+    match locations {
+        Some(x) => check_movies_novelty(&x, &mut movies),
+        None => ()
+    }
+
     println!("");
     let mut out: Vec<Position> = vec![];
     for movie in movies {
@@ -277,14 +288,16 @@ fn main() {
         fs::create_dir(&config_dir).expect("Nie można utworzyć folderu konfiguracyjnego!");
     }
     let config_path: PathBuf = config_dir.join("credentials.conf");
-    let movies_path: PathBuf = config_dir.join("movies.conf");
     let marker_path: PathBuf = config_dir.join("marker.png");
+    let small_marker_path: PathBuf = config_dir.join("marker_small.png");
 
     if matches.get_flag("config") {
         save_config(&config_path, &rgui);
         download_marker(&marker_path);
+        download_marker(&small_marker_path);
     }
     else if matches.get_flag("set_movies") {
+        let movies_path: PathBuf = config_dir.join("movies.conf");
         save_movies(&movies_path, &rgui);
     }
     else if matches.get_flag("auto_mode") {
@@ -293,7 +306,7 @@ fn main() {
         loop {
             if matches.get_flag("debug") { wait_till(8, 27, rand::random_range(0..60), "Logowanie za"); } // 8:28:16
             log_in(&config, &rgui);
-            movies = detect_movies(&marker_path, &mut rgui);
+            movies = detect_movies(&marker_path, &small_marker_path, &mut rgui);
             if matches.get_flag("debug") { wait_till(8, 30, 0, "Rezerwacje za"); } // 8:29:59
             if movies.len() > 0 { reserve_movies(&movies, &mut rgui); }
             log_out(&config, &rgui);
@@ -303,6 +316,7 @@ fn main() {
         }
     }
     else {
+        let movies_path: PathBuf = config_dir.join("movies.conf");
         let config: Config = load_config(&config_path);
         let movies: Vec<Position> = load_movies(&movies_path);
 
