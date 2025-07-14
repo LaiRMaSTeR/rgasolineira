@@ -224,7 +224,7 @@ fn check_movies_novelty(new_movies: &Vec<(u32, u32, f32)>, movies: &mut Vec<(u32
         for movie in new_movies {
             novelty = true;
             for old in &mut *movies {
-                if (movie.0 as i32 - old.0 as i32).abs() < 2 && (movie.1 as i32 - old.1 as i32).abs() < 2 { novelty = false; }
+                if (movie.0 as i32 - old.0 as i32).abs() < 10 && (movie.1 as i32 - old.1 as i32).abs() < 5 { novelty = false; }
             }
             if novelty { movies.push(*movie); }
         }
