@@ -243,10 +243,10 @@ fn detect_movies(path: &PathBuf, path_small: &PathBuf, rgui: &mut RustAutoGui) -
         rgui.store_template_from_imagebuffer(scaled_image, None, rustautogui::MatchMode::Segmented, &scaling.to_string()).unwrap();
     }
     // rgui.store_template_from_imagebuffer(gray_image, None, rustautogui::MatchMode::Segmented, "100").unwrap();
-    let img: image::ImageReader<io::BufReader<fs::File>> = image::ImageReader::open(path_small).unwrap();
-    let img: image::DynamicImage = img.decode().unwrap();
-    let gray_image: ImageBuffer<Luma<u8>, Vec<u8>> = img.to_luma8();
-    rgui.store_template_from_imagebuffer(gray_image, None, rustautogui::MatchMode::Segmented, "small").unwrap();
+    // let img: image::ImageReader<io::BufReader<fs::File>> = image::ImageReader::open(path_small).unwrap();
+    // let img: image::DynamicImage = img.decode().unwrap();
+    // let gray_image: ImageBuffer<Luma<u8>, Vec<u8>> = img.to_luma8();
+    // rgui.store_template_from_imagebuffer(gray_image, None, rustautogui::MatchMode::Segmented, "small").unwrap();
 
     let mut locations: Option<Vec<(u32, u32, f32)>>;
     let mut movies: Vec<(u32, u32, f32)> = vec![];
@@ -257,11 +257,11 @@ fn detect_movies(path: &PathBuf, path_small: &PathBuf, rgui: &mut RustAutoGui) -
             None => continue
         }
     }
-    locations = rgui.find_stored_image_on_screen(0.9, "small").unwrap();
-    match locations {
-        Some(x) => check_movies_novelty(&x, &mut movies),
-        None => ()
-    }
+    // locations = rgui.find_stored_image_on_screen(0.9, "small").unwrap();
+    // match locations {
+    //     Some(x) => check_movies_novelty(&x, &mut movies),
+    //     None => ()
+    // }
 
     println!("");
     let mut out: Vec<Position> = vec![];
