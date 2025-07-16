@@ -12,3 +12,6 @@ Więcej gazoliny! Rdzawej!
 - Na Linuxie działa wyłącznie na X11. Nie wymaga sudo (a wręcz nie należy go używać). Trzeba zainstalować `libx11-dev libxtst-dev` jeśli ich nie ma w systemie.
 - Na Macu trzeba dać odpowiednie uprawnienia binarce.
 - Na Windowsie chyba działa po prostu? Na pewno nie będę tego sprawdzał…
+
+### Problemy
+Na Macach z Retiną tryb automatyczny nie działa i nie chce mi się myślec czemu.
