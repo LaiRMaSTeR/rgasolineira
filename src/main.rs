@@ -167,9 +167,7 @@ fn log_out(conf: &Config, rgui: &RustAutoGui) {
 }
 
 
-fn reserve_movies(movies: &Vec<Position>, rgui: &mut RustAutoGui) {
-    let screen: (i32, i32) = rgui.get_screen_size();
-    let diagonal: f32 = (screen.0 * screen.0 + screen.1 * screen.1) as f32;
+fn reserve_movies(movies: &Vec<Position>, rgui: &mut RustAutoGui, diagonal: &f32) {
     let mut current_pos: Position;
     let mut time: f32;
     for movie in movies {
@@ -271,6 +269,8 @@ fn main() {
         .get_matches();
 
     let mut rgui: rustautogui::RustAutoGui = RustAutoGui::new(false).unwrap();
+    let screen: (i32, i32) = rgui.get_screen_size();
+    let diagonal: f32 = (screen.0 * screen.0 + screen.1 * screen.1) as f32;
     let config_dir: PathBuf = [env::current_exe().unwrap().parent().unwrap(), Path::new(".rgasolineira")].iter().collect();
     if !fs::exists(&config_dir).unwrap() {
         println!("Tworzenie folderu konfiguracyjnego: {:?}", &config_dir);
@@ -294,8 +294,10 @@ fn main() {
             if matches.get_flag("debug") { wait_till(8, 27, rand::random_range(0..60), "Logowanie za"); } // 8:28:16
             log_in(&config, &rgui);
             movies = detect_movies(&marker_path, &mut rgui);
+            let current_pos = construct_position(rgui.get_mouse_position().unwrap()); // so first movie will be clicked on right after 8:30
+            rgui.move_mouse_to_pos(&movies[0].x - 10, &movies[0].y + 10, distance(&current_pos, &movies[0]) / diagonal.sqrt() / 2.).unwrap();
             if matches.get_flag("debug") { wait_till(8, 30, 0, "Rezerwacje za"); } // 8:29:59
-            if movies.len() > 0 { reserve_movies(&movies, &mut rgui); }
+            if movies.len() > 0 { reserve_movies(&movies, &mut rgui, &diagonal); }
             log_out(&config, &rgui);
             movies.clear();
 
@@ -309,8 +311,10 @@ fn main() {
 
         if matches.get_flag("debug") { wait_till(8, 28, rand::random_range(0..60), "Logowanie za"); } // 8:28:16
         log_in(&config, &rgui);
+        let current_pos = construct_position(rgui.get_mouse_position().unwrap()); // so first movie will be clicked on right after 8:30
+        rgui.move_mouse_to_pos(&movies[0].x - 10, &movies[0].y + 10, distance(&current_pos, &movies[0]) / diagonal.sqrt() / 2.).unwrap();
         if matches.get_flag("debug") { wait_till(8, 30, 0, "Rezerwacje za"); } // 8:29:59
-        reserve_movies(&movies, &mut rgui);
+        reserve_movies(&movies, &mut rgui, &diagonal);
         log_out(&config, &rgui);
     }
 }
