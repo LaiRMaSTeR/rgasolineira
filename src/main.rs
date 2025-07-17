@@ -172,11 +172,11 @@ fn reserve_movies(movies: &Vec<Position>, rgui: &mut RustAutoGui, diagonal: &f32
     let mut time: f32;
     for movie in movies {
         current_pos = construct_position(rgui.get_mouse_position().unwrap());
-        time = distance(&current_pos, movie) / diagonal.sqrt() / 2.;
+        time = distance(&current_pos, movie) / diagonal.sqrt() / 3.;
         rgui.move_mouse_to_pos(movie.x, movie.y, time).unwrap();
-        thread::sleep(Duration::from_millis(rand::random_range(30..60)));
+        thread::sleep(Duration::from_millis(rand::random_range(15..30)));
         rgui.left_click().unwrap();
-        thread::sleep(Duration::from_millis(rand::random_range(30..60)));
+        thread::sleep(Duration::from_millis(rand::random_range(10..30)));
         println!("Przesunięto do {} {} w {} s", movie.x, movie.y, time);
     }
 }
