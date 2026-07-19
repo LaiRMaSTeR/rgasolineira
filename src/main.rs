@@ -172,11 +172,11 @@ fn reserve_movies(movies: &Vec<Position>, rgui: &mut RustAutoGui, diagonal: &f32
     let mut time: f32;
     for movie in movies {
         current_pos = construct_position(rgui.get_mouse_position().unwrap());
-        time = distance(&current_pos, movie) / diagonal.sqrt() / 3.;
+        time = distance(&current_pos, movie) / diagonal.sqrt() / 2.;
         rgui.move_mouse_to_pos(movie.x, movie.y, time).unwrap();
-        thread::sleep(Duration::from_millis(rand::random_range(15..30)));
+        thread::sleep(Duration::from_millis(rand::random_range(40..60)));
         rgui.left_click().unwrap();
-        thread::sleep(Duration::from_millis(rand::random_range(10..30)));
+        thread::sleep(Duration::from_millis(rand::random_range(180..200)));
         println!("Przesunięto do {} {} w {} s", movie.x, movie.y, time);
     }
 }
@@ -296,7 +296,7 @@ fn main() {
             movies = detect_movies(&marker_path, &mut rgui);
             let current_pos = construct_position(rgui.get_mouse_position().unwrap()); // so first movie will be clicked on right after 8:30
             rgui.move_mouse_to_pos(&movies[0].x - 10, &movies[0].y + 10, distance(&current_pos, &movies[0]) / diagonal.sqrt() / 2.).unwrap();
-            if matches.get_flag("debug") { wait_till(8, 30, 0, "Rezerwacje za"); } // 8:29:59
+            if matches.get_flag("debug") { wait_till(8, 30, 2, "Rezerwacje za"); } // 8:29:59
             if movies.len() > 0 { reserve_movies(&movies, &mut rgui, &diagonal); }
             log_out(&config, &rgui);
             movies.clear();
@@ -313,7 +313,7 @@ fn main() {
         log_in(&config, &rgui);
         let current_pos = construct_position(rgui.get_mouse_position().unwrap()); // so first movie will be clicked on right after 8:30
         rgui.move_mouse_to_pos(&movies[0].x - 10, &movies[0].y + 10, distance(&current_pos, &movies[0]) / diagonal.sqrt() / 2.).unwrap();
-        if matches.get_flag("debug") { wait_till(8, 30, 0, "Rezerwacje za"); } // 8:29:59
+        if matches.get_flag("debug") { wait_till(8, 30, 2, "Rezerwacje za"); } // 8:29:59
         reserve_movies(&movies, &mut rgui, &diagonal);
         log_out(&config, &rgui);
     }
